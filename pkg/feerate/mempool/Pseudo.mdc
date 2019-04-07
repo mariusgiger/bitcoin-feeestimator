@@ -1,0 +1,64 @@
+---
+header-includes:
+  - \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+---
+
+\DontPrintSemicolon 
+
+\IncMargin{1em}
+\begin{algorithm}
+\setcounter{algocf}{1}
+
+\SetKwData{AvgNumberOfTxPerBlock}{avgTxNum}
+\SetKwData{Pool}{pool}
+\SetKwData{LastMined}{lastMined}
+
+\SetKwFunction{Sort}{Sort}
+\SetKwFunction{Add}{Add}
+\SetKwFunction{Size}{Size}
+\SetKwFunction{length}{length}
+
+\SetKwFunction{GetAvgTxsPerBlock}{getAvgTxsPerBlock}
+\SetKwFunction{GetCurrentMempool}{getCurrentMempool}
+\SetKwFunction{GetTimeLastMined}{getTimeLastMined}
+\SetKwFunction{Now}{time.now}
+\SetKwFunction{Sub}{sub}
+\SetKwFunction{Minutes}{minutes}
+
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{Percentile := 80, Range := 60}
+\Output{The estimated fee-per-byte-rate $e$}
+\BlankLine
+
+\AvgNumberOfTxPerBlock$\leftarrow$\GetAvgTxsPerBlock{}\;
+\Pool$\leftarrow$\GetCurrentMempool{}\;
+\LastMined$\leftarrow$\GetTimeLastMined{}\;
+$diff\leftarrow$\Now{}.\Sub{\LastMined}\;
+$powProgress\leftarrow (1 / 10) * diff.\Minutes{}$\;
+
+\uIf{powProgress > 1}{
+$powProgress \leftarrow 1$\;
+}
+
+$poolRates\leftarrow$[]\;
+\ForEach{$tx \in \Pool$}{
+\emph{extract fee rates.}\;
+$feeInSatoshi \leftarrow tx.Fee * 1e8$\;
+$ratePerByte \leftarrow feeInSatoshi / tx.Size$\;
+$poolRates.\Add{$ratePerByte$}$\;
+}
+
+$poolRates.\Sort{}$\;
+$idx \leftarrow poolRates.\length{} - \AvgNumberOfTxPerBlock$\;
+\uIf{idx < 0}{
+$idx \leftarrow 0$\;
+}
+
+\emph{only consider rates starting at idx.}\;
+$filteredRates \leftarrow poolRates[idx:]$\;
+$verificationPercentile \leftarrow Percentile - Range*powProgress$\;
+$targetIndex \leftarrow (filteredRates.\length{}-1)*verificationPercentile/100$\;
+$e \leftarrow filteredRates[targetIndex]$\;
+
+\caption{mempool-based fee estimation}\label{algo_mempoolimpl}
+\end{algorithm}\DecMargin{1em}

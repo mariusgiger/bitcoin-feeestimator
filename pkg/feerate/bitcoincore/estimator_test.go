@@ -1,0 +1,5 @@
+package bitcoincore
+
+func createRandomMempoolData() {
+
+}

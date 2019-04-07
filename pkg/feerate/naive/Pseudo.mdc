@@ -1,0 +1,43 @@
+---
+header-includes:
+  - \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+---
+
+\IncMargin{1em}
+\begin{algorithm}
+\SetKwData{E}{e}
+\SetKwData{FeeRates}{feeRates}
+\SetKwData{InputSum}{inputSum}
+\SetKwData{OutputSum}{outputSum}
+\SetKwData{Fee}{fee}
+\SetKwData{Transactions}{transactions}
+\SetKwData{FeeRate}{feeRate}
+\SetKwFunction{Sum}{Sum}
+\SetKwFunction{Sort}{Sort}
+\SetKwFunction{Add}{Add}
+\SetKwFunction{Size}{Size}
+\SetKwFunction{length}{length}
+\SetKwInOut{Input}{input}\SetKwInOut{Output}{output}
+\Input{A block $B$ with transactions}
+\Output{The estimated fee-per-byte-rate $e$}
+\BlankLine
+\emph{Retrieve all transaction with inputs and outputs of this block}\;
+
+\FeeRates$\leftarrow$ []\;
+\Transactions$\leftarrow$ B.Transactions\;
+\For{$i\leftarrow 0$ \KwTo $\Transactions.\length{}$}{
+
+\emph{Compute the fee-rate-per-byte for every transaction}
+
+\InputSum$\leftarrow$ \Sum{$\Transactions[i].Inputs$}\;
+\OutputSum$\leftarrow$ \Sum{$\Transactions[i].Outputs$}\;
+\Fee$\leftarrow$ \InputSum-\OutputSum\;
+\FeeRate$\leftarrow$ \Fee/$\Transactions[i].\Size{}$\;
+\FeeRates.\Add{\FeeRate}\;
+}
+\Sort{\FeeRates}\;
+percentile$\leftarrow$ 60\;
+index$\leftarrow$ (\FeeRates.\length{}-1)*percentile / 100\;
+e$\leftarrow$ \FeeRates[index]\;
+\caption{naive fee estimation}\label{algo_naiveimpl}
+\end{algorithm}\DecMargin{1em}
